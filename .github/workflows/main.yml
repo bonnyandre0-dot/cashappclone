@@ -1,0 +1,26 @@
+name: Build Unsigned IPA
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build unsigned .app
+        run: |
+          xcodebuild -project "Cash App.xcodeproj" -scheme "Cash App" -configuration Release -derivedDataPath ./build -sdk iphoneos CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+
+      - name: Package .app into .ipa
+        run: |
+          mkdir -p Payload
+          cp -r ./build/Build/Products/Release-iphoneos/*.app Payload/
+          zip -r CashAppClone.ipa Payload
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: CashAppClone-unsigned
+          path: CashAppClone.ipa
